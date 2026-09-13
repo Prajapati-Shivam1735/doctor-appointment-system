@@ -1,3 +1,8 @@
+import io
+from django.http import HttpResponse
+from reportlab.lib.pagesizes import letter
+from reportlab.pdfgen import canvas
+from reportlab.lib import colors
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -6,6 +11,7 @@ from django.db import models
 from django.utils import timezone
 from .models import Doctor, Department, Appointment
 from .forms import AppointmentForm
+
 
 def send_booking_email(appointment, subject, message_body):
     """Helper function to send simulated email notifications"""
@@ -128,14 +134,35 @@ def reschedule_appointment(request, app_id):
 @login_required
 def staff_dashboard(request):
     status_filter = request.GET.get('status', '')
-    appointments = Appointment.objects.select_related('doctor', 'doctor__department').order_by('-appointment_date', '-appointment_time')
+    all_appointments = Appointment.objects.select_related('doctor', 'doctor__department')
     
+    # --- Analytics Calculations ---
+    total_count = all_appointments.count()
+    pending_count = all_appointments.filter(status='PENDING').count()
+    confirmed_count = all_appointments.filter(status='CONFIRMED').count()
+    completed_count = all_appointments.filter(status='COMPLETED').count()
+    cancelled_count = all_appointments.filter(status='CANCELLED').count()
+
+    # Total Revenue from Completed appointments
+    total_revenue = all_appointments.filter(status='COMPLETED').aggregate(
+        total=models.Sum('doctor__consultation_fee')
+    )['total'] or 0
+
+    appointments = all_appointments.order_by('-appointment_date', '-appointment_time')
     if status_filter:
         appointments = appointments.filter(status=status_filter)
         
     return render(request, 'booking/staff_dashboard.html', {
         'appointments': appointments,
-        'status_filter': status_filter
+        'status_filter': status_filter,
+        'stats': {
+            'total': total_count,
+            'pending': pending_count,
+            'confirmed': confirmed_count,
+            'completed': completed_count,
+            'cancelled': cancelled_count,
+            'revenue': total_revenue,
+        }
     })
 
 @login_required
@@ -153,3 +180,73 @@ def update_appointment_status(request, app_id, new_status):
             )
             send_booking_email(appointment, f"Appointment Status: {appointment.get_status_display()}", email_msg)
     return redirect(request.META.get('HTTP_REFERER', 'staff_dashboard'))
+
+def download_appointment_pdf(request, app_id):
+    appointment = get_object_or_404(Appointment, id=app_id)
+
+    # In-memory buffer create karein
+    buffer = io.BytesIO()
+    p = canvas.Canvas(buffer, pagesize=letter)
+    width, height = letter
+
+    # --- PDF Styling ---
+    # Header Background Banner
+    p.setFillColor(colors.HexColor("#0284c7"))
+    p.rect(0, height - 100, width, 100, stroke=0, fill=1)
+
+    # Header Brand Text
+    p.setFillColor(colors.white)
+    p.setFont("Helvetica-Bold", 24)
+    p.drawString(50, height - 55, "DocPulse Healthcare")
+    p.setFont("Helvetica", 11)
+    p.drawString(50, height - 75, "Official Appointment Confirmation Receipt")
+
+    # Content Box Border
+    p.setStrokeColor(colors.HexColor("#cbd5e1"))
+    p.setLineWidth(1)
+    p.roundRect(50, height - 420, width - 100, 300, 10, stroke=1, fill=0)
+
+    # Details Title
+    p.setFillColor(colors.HexColor("#0f172a"))
+    p.setFont("Helvetica-Bold", 14)
+    p.drawString(70, height - 140, f"Appointment Slip - Ref #{appointment.id:05d}")
+
+    # Key-Value Details
+    y = height - 175
+    line_gap = 25
+    details = [
+        ("Patient Name:", appointment.patient_name),
+        ("Contact Phone:", appointment.patient_phone),
+        ("Email Address:", appointment.patient_email),
+        ("Doctor Name:", f"Dr. {appointment.doctor.name}"),
+        ("Department:", appointment.doctor.department.name),
+        ("Specialization:", appointment.doctor.specialization),
+        ("Scheduled Date:", str(appointment.appointment_date)),
+        ("Scheduled Time:", str(appointment.appointment_time)),
+        ("Status:", appointment.get_status_display()),
+        ("Consultation Fee:", f"INR {appointment.doctor.consultation_fee}"),
+    ]
+
+    for label, val in details:
+        p.setFont("Helvetica-Bold", 10)
+        p.setFillColor(colors.HexColor("#475569"))
+        p.drawString(70, y, label)
+
+        p.setFont("Helvetica", 10)
+        p.setFillColor(colors.HexColor("#0f172a"))
+        p.drawString(200, y, str(val))
+        y -= line_gap
+
+    # Footer note
+    p.setFont("Helvetica-Oblique", 9)
+    p.setFillColor(colors.HexColor("#64748b"))
+    p.drawString(50, height - 450, "Please present this digital receipt or printout at the reception 15 minutes before your time.")
+    p.drawString(50, height - 465, "Generated automatically by DocPulse Healthcare Portal.")
+
+    p.showPage()
+    p.save()
+    buffer.seek(0)
+
+    response = HttpResponse(buffer, content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="Appointment_{appointment.id}_{appointment.patient_name}.pdf"'
+    return response
