@@ -9,7 +9,7 @@ https://docs.djangoproject.com/en/6.1/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/6.1/ref/settings/
 """
-
+import os
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-e3$fru91enhc27whq+ef(1*61&-2z^w%6sfr!fo*%2=)y&$e5n
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [*]
 
 
 # Application definition
@@ -73,16 +73,22 @@ WSGI_APPLICATION = 'core.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/6.1/ref/settings/#databases
 
+  
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'appointment_booking_db',
-        'USER': 'root',                # MySQL username
-        'PASSWORD': 'Root@123',    # MySQL password
-        'HOST': '127.0.0.1',
-        'PORT': '3306',
+        'NAME': 'defaultdb',
+        'USER': 'avnadmin',
+        'PASSWORD': os.environ.get('DB_PASSWORD', ''),
+        'HOST': 'mysql-31ce0565-rmx-c5b4.g.aivencloud.com',
+        'PORT': '21256',
+        'OPTIONS': {
+            'ssl': {'ca': None}
+        }
     }
 }
+
 
 
 # Password validation
