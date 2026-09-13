@@ -21,12 +21,22 @@
 </head>
 <body>
 
-<nav class="navbar navbar-expand-lg bg-white border-bottom sticky-top">
-    <div class="container">
-        <a class="navbar-brand fw-bold text-primary" href="/"><i class="fa-solid fa-heart-pulse me-1"></i> DocPulse Staff</a>
-        <div class="d-flex align-items-center gap-3">
-            <span class="small text-muted">Logged in as <strong>{{ request.user.username }}</strong></span>
-            <a href="/admin/" class="btn btn-outline-secondary btn-sm rounded-3">Django Admin</a>
+<nav class="navbar navbar-expand-lg bg-white border-bottom sticky-top py-2">
+    <div class="container-fluid px-4 d-flex justify-content-between align-items-center">
+        <a class="navbar-brand fw-bold text-primary d-flex align-items-center gap-2 m-0" href="/">
+            <i class="fa-solid fa-heart-pulse fs-4"></i>
+            <span>DocPulse Staff</span>
+        </a>
+        <div class="d-flex align-items-center gap-2">
+            <span class="small text-muted me-2">Logged in as <strong>{{ request.user.username }}</strong></span>
+            <a href="/" class="btn btn-outline-secondary btn-sm rounded-3 px-3">Website</a>
+            <a href="/admin/" class="btn btn-outline-secondary btn-sm rounded-3 px-3">Admin Panel</a>
+            <form method="post" action="{% url 'admin:logout' %}" class="d-inline mb-0">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-danger btn-sm rounded-3 px-3">
+                    <i class="fa-solid fa-arrow-right-from-bracket me-1"></i> Logout
+                </button>
+            </form>
         </div>
     </div>
 </nav>

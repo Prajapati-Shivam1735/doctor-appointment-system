@@ -7,7 +7,8 @@ urlpatterns = [
     path('track/', views.my_appointments, name='my_appointments'),
     path('appointment/<int:app_id>/cancel/', views.cancel_appointment_by_patient, name='patient_cancel'),
     path('appointment/<int:app_id>/reschedule/', views.reschedule_appointment, name='reschedule_appointment'),
-    path('appointment/<int:app_id>/pdf/', views.download_appointment_pdf, name='download_pdf'), # PDF route
+    path('appointment/<int:app_id>/pdf/', views.download_appointment_pdf, name='download_pdf'),
+    path('appointment/<int:app_id>/payment-callback/', views.payment_callback, name='payment_callback'),
     path('dashboard/', views.staff_dashboard, name='staff_dashboard'),
     path('appointment/<int:app_id>/status/<str:new_status>/', views.update_appointment_status, name='update_status'),
 ]

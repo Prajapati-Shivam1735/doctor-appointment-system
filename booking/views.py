@@ -1,4 +1,7 @@
 import io
+import razorpay
+from django.conf import settings
+from django.views.decorators.csrf import csrf_exempt
 from django.http import HttpResponse
 from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
@@ -54,26 +57,67 @@ def book_appointment(request):
     if request.method == 'POST':
         form = AppointmentForm(request.POST)
         if form.is_valid():
-            appointment = form.save()
-            # Send booking confirmation email
-            email_msg = (
-                f"Hello {appointment.patient_name},\n\n"
-                f"Your appointment with Dr. {appointment.doctor.name} has been received.\n"
-                f"Date: {appointment.appointment_date}\n"
-                f"Time: {appointment.appointment_time}\n"
-                f"Current Status: {appointment.get_status_display()}\n\n"
-                f"Thank you for choosing DocPulse!"
-            )
-            send_booking_email(appointment, "Appointment Reserved - DocPulse", email_msg)
+            appointment = form.save(commit=False)
+            
+            # Direct Pay at Clinic Setup
+            appointment.payment_method = 'AT_CLINIC'
+            appointment.payment_status = 'PENDING'
+            appointment.status = 'CONFIRMED'
+            appointment.save()
+
+            # Confirmation Email
+            try:
+                email_msg = (
+                    f"Hello {appointment.patient_name},\n\n"
+                    f"Your appointment with Dr. {appointment.doctor.name} is confirmed for "
+                    f"{appointment.appointment_date} at {appointment.appointment_time}.\n"
+                    f"Appointment ID: #{appointment.id}\n"
+                    f"Payment Option: Pay at Hospital (₹{appointment.doctor.consultation_fee}).\n\n"
+                    f"Thank you for choosing DocPulse!"
+                )
+                send_booking_email(appointment, "Appointment Confirmed (Pay at Clinic) - DocPulse", email_msg)
+            except Exception as e:
+                print("Email sending error:", e)
+
+            # Direct Success Page Render
             return render(request, 'booking/success.html', {'appointment': appointment})
     else:
         doctor_id = request.GET.get('doctor_id')
-        initial_data = {}
-        if doctor_id:
-            initial_data['doctor'] = doctor_id
-        form = AppointmentForm(initial=initial_data)
+        form = AppointmentForm(initial={'doctor': doctor_id} if doctor_id else None)
         
     return render(request, 'booking/book.html', {'form': form})
+
+@csrf_exempt
+def payment_callback(request, app_id):
+    appointment = get_object_or_404(Appointment, id=app_id)
+    
+    if request.method == 'POST':
+        payment_id = request.POST.get('razorpay_payment_id', 'pay_test_default')
+        
+        # Update booking records
+        appointment.razorpay_payment_id = payment_id
+        appointment.payment_status = 'PAID'
+        appointment.status = 'CONFIRMED'
+        appointment.save()
+
+        # Send confirmation email safely
+        try:
+            email_msg = (
+                f"Dear {appointment.patient_name},\n\n"
+                f"Your payment has been received successfully!\n"
+                f"Appointment ID: #{appointment.id}\n"
+                f"Doctor: Dr. {appointment.doctor.name}\n"
+                f"Slot: {appointment.appointment_date} at {appointment.appointment_time}\n"
+                f"Status: Confirmed\n\n"
+                f"Thank you for choosing DocPulse!"
+            )
+            send_booking_email(appointment, "Appointment & Payment Confirmed - DocPulse", email_msg)
+        except Exception as e:
+            print("Email failed, but continuing:", e)
+
+        return render(request, 'booking/success.html', {'appointment': appointment})
+
+    return redirect('track_appointment')
 
 def my_appointments(request):
     query = request.GET.get('q', '').strip()
@@ -218,7 +262,7 @@ def download_appointment_pdf(request, app_id):
         ("Patient Name:", appointment.patient_name),
         ("Contact Phone:", appointment.patient_phone),
         ("Email Address:", appointment.patient_email),
-        ("Doctor Name:", f"Dr. {appointment.doctor.name}"),
+        ("Doctor Name:", appointment.doctor.name if appointment.doctor.name.startswith("Dr.") else f"Dr. {appointment.doctor.name}"),
         ("Department:", appointment.doctor.department.name),
         ("Specialization:", appointment.doctor.specialization),
         ("Scheduled Date:", str(appointment.appointment_date)),

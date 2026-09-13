@@ -132,3 +132,7 @@ MAILERS = {
 }
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# Razorpay Configuration (Test Mode)
+RAZORPAY_KEY_ID = 'rzp_test_TbOn02HXo0weeA'
+RAZORPAY_KEY_SECRET = 'j0xNw88UdKdXYBSeQtZVp2N4'

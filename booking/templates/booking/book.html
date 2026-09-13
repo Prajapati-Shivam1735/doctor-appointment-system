@@ -186,6 +186,50 @@
                                 {{ form.symptoms }}
                             </div>
                         </div>
+                        <!-- Payment Mode Selection -->
+                        <!-- Payment Mode Selection -->
+                        <div class="mb-4">
+                            <label class="form-label fw-bold small text-secondary">Payment Method</label>
+                            <div class="row g-3">
+                                <!-- Pay at Clinic Option (Active & Default) -->
+                                <div class="col-md-6">
+                                    <label
+                                        class="border rounded-3 p-3 d-flex align-items-center justify-content-between w-100 bg-white shadow-sm"
+                                        style="cursor: pointer; border-color: #0284c7 !important;">
+                                        <div class="d-flex align-items-center gap-3">
+                                            <input type="radio" name="payment_method" value="AT_CLINIC"
+                                                class="form-check-input mt-0" checked>
+                                            <div>
+                                                <div class="fw-semibold text-dark">Pay at Hospital / Clinic</div>
+                                                <small class="text-muted">Pay via Cash/UPI on visit</small>
+                                            </div>
+                                        </div>
+                                        <i class="fa-solid fa-hospital-user text-primary fs-4"></i>
+                                    </label>
+                                </div>
+
+                                <!-- Online UPI Option (Disabled with Coming Soon Badge) -->
+                                <div class="col-md-6">
+                                    <label
+                                        class="border rounded-3 p-3 d-flex align-items-center justify-content-between w-100 bg-light opacity-75"
+                                        style="cursor: not-allowed;">
+                                        <div class="d-flex align-items-center gap-3">
+                                            <input type="radio" name="payment_method" value="ONLINE"
+                                                class="form-check-input mt-0" disabled>
+                                            <div>
+                                                <div class="fw-semibold text-secondary d-flex align-items-center gap-2">
+                                                    Pay Online (UPI / Card)
+                                                    <span class="badge bg-warning text-dark rounded-pill small"
+                                                        style="font-size: 0.65rem;">Coming Soon</span>
+                                                </div>
+                                                <small class="text-muted">Instant payment gateway</small>
+                                            </div>
+                                        </div>
+                                        <i class="fa-solid fa-qrcode text-muted fs-4"></i>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
 
                         <button type="submit" class="btn btn-submit mt-3">
                             Confirm & Book Appointment

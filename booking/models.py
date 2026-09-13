@@ -1,25 +1,21 @@
 from django.db import models
 
-from django.contrib.auth.models import User
-
 class Department(models.Model):
-    name = models.CharField(max_length=100, unique=True)
-    description = models.TextField(blank=True, null=True)
+    name = models.CharField(max_length=100)
+    description = models.TextField(blank=True)
 
     def __str__(self):
         return self.name
 
 class Doctor(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='doctor_profile', null=True, blank=True)
-    name = models.CharField(max_length=100)
     department = models.ForeignKey(Department, on_delete=models.CASCADE, related_name='doctors')
+    name = models.CharField(max_length=100)
     specialization = models.CharField(max_length=150)
     phone = models.CharField(max_length=15)
-    email = models.EmailField(unique=True)
-    consultation_fee = models.DecimalField(max_digits=10, decimal_places=2, default=500.00)
+    email = models.EmailField()
+    consultation_fee = models.DecimalField(max_digits=8, decimal_places=2, default=500.00)
 
     def __str__(self):
-        # Agar name me pehle se 'Dr.' hai toh dubara na jode
         prefix = "" if self.name.strip().startswith("Dr.") else "Dr. "
         return f"{prefix}{self.name} ({self.department.name})"
 
@@ -31,6 +27,17 @@ class Appointment(models.Model):
         ('CANCELLED', 'Cancelled'),
     ]
 
+    PAYMENT_METHOD_CHOICES = [
+        ('AT_CLINIC', 'Pay at Hospital / Clinic'),
+        ('ONLINE', 'Pay Online (UPI / Card)'),
+    ]
+
+    PAYMENT_STATUS_CHOICES = [
+        ('PENDING', 'Pending'),
+        ('PAID', 'Paid'),
+        ('FAILED', 'Failed'),
+    ]
+
     patient_name = models.CharField(max_length=100)
     patient_email = models.EmailField()
     patient_phone = models.CharField(max_length=15)
@@ -39,6 +46,13 @@ class Appointment(models.Model):
     appointment_time = models.TimeField()
     symptoms = models.TextField(blank=True, null=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='PENDING')
+    
+    # Payment Fields
+    payment_method = models.CharField(max_length=20, choices=PAYMENT_METHOD_CHOICES, default='AT_CLINIC')
+    payment_status = models.CharField(max_length=20, choices=PAYMENT_STATUS_CHOICES, default='PENDING')
+    razorpay_order_id = models.CharField(max_length=100, blank=True, null=True)
+    razorpay_payment_id = models.CharField(max_length=100, blank=True, null=True)
+
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):

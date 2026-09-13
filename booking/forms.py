@@ -5,7 +5,11 @@ from .models import Appointment
 class AppointmentForm(forms.ModelForm):
     class Meta:
         model = Appointment
-        fields = ['patient_name', 'patient_email', 'patient_phone', 'doctor', 'appointment_date', 'appointment_time', 'symptoms']
+        fields = [
+            'patient_name', 'patient_email', 'patient_phone', 
+            'doctor', 'appointment_date', 'appointment_time', 
+            'symptoms', 'payment_method'
+        ]
         widgets = {
             'patient_name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Full Name'}),
             'patient_email': forms.EmailInput(attrs={'class': 'form-control', 'placeholder': 'Email'}),
@@ -13,7 +17,8 @@ class AppointmentForm(forms.ModelForm):
             'doctor': forms.Select(attrs={'class': 'form-select'}),
             'appointment_date': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
             'appointment_time': forms.TimeInput(attrs={'class': 'form-control', 'type': 'time'}),
-            'symptoms': forms.Textarea(attrs={'class': 'form-control', 'rows': 3, 'placeholder': 'Describe symptoms...'}),
+            'symptoms': forms.Textarea(attrs={'class': 'form-control', 'rows': 2, 'placeholder': 'Describe symptoms...'}),
+            'payment_method': forms.RadioSelect(attrs={'class': 'form-check-input'}),
         }
 
     def clean_appointment_date(self):
@@ -29,7 +34,6 @@ class AppointmentForm(forms.ModelForm):
         appointment_time = cleaned_data.get('appointment_time')
 
         if doctor and appointment_date and appointment_time:
-            # Check karein agar doctor ka is date aur time par koi active appointment exist karta hai
             conflict = Appointment.objects.filter(
                 doctor=doctor,
                 appointment_date=appointment_date,
