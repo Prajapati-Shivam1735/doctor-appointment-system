@@ -1,4 +1,5 @@
 from django import forms
+from django.utils import timezone
 from .models import Appointment
 
 class AppointmentForm(forms.ModelForm):
@@ -14,3 +15,32 @@ class AppointmentForm(forms.ModelForm):
             'appointment_time': forms.TimeInput(attrs={'class': 'form-control', 'type': 'time'}),
             'symptoms': forms.Textarea(attrs={'class': 'form-control', 'rows': 3, 'placeholder': 'Describe symptoms...'}),
         }
+
+    def clean_appointment_date(self):
+        appointment_date = self.cleaned_data.get('appointment_date')
+        if appointment_date and appointment_date < timezone.localdate():
+            raise forms.ValidationError("You cannot book an appointment for a past date.")
+        return appointment_date
+
+    def clean(self):
+        cleaned_data = super().clean()
+        doctor = cleaned_data.get('doctor')
+        appointment_date = cleaned_data.get('appointment_date')
+        appointment_time = cleaned_data.get('appointment_time')
+
+        if doctor and appointment_date and appointment_time:
+            # Check karein agar doctor ka is date aur time par koi active appointment exist karta hai
+            conflict = Appointment.objects.filter(
+                doctor=doctor,
+                appointment_date=appointment_date,
+                appointment_time=appointment_time
+            ).exclude(status='CANCELLED')
+
+            if self.instance and self.instance.pk:
+                conflict = conflict.exclude(pk=self.instance.pk)
+
+            if conflict.exists():
+                raise forms.ValidationError(
+                    f"Dr. {doctor.name} is already booked on {appointment_date} at {appointment_time}. Please select another time slot."
+                )
+        return cleaned_data

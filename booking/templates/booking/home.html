@@ -140,6 +140,23 @@
                 <p class="text-muted small mb-0">Browse through our experienced doctors</p>
             </div>
         </div>
+        <!-- Live Search Bar -->
+        <div class="row justify-content-center mb-4">
+            <div class="col-md-8">
+                <form method="get" action="/" class="d-flex gap-2">
+                    {% if selected_dept %}
+                    <input type="hidden" name="dept" value="{{ selected_dept }}">
+                    {% endif %}
+                    <input type="text" name="q" value="{{ search_query }}"
+                        class="form-control rounded-pill px-4 shadow-sm"
+                        placeholder="Search doctor by name, specialty, or department...">
+                    <button type="submit" class="btn btn-primary rounded-pill px-4">Search</button>
+                    {% if search_query %}
+                    <a href="/" class="btn btn-outline-secondary rounded-pill px-3">Clear</a>
+                    {% endif %}
+                </form>
+            </div>
+        </div>
         <!-- Department Filter Pills -->
         <div class="d-flex gap-2 overflow-auto pb-3 mb-4">
             <a href="/"
