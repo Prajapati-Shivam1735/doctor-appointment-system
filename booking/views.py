@@ -14,7 +14,7 @@ from django.db import models
 from django.utils import timezone
 from .models import Doctor, Department, Appointment
 from .forms import AppointmentForm
-
+from django.contrib.auth.decorators import login_required
 
 def send_booking_email(appointment, subject, message_body):
     """Helper function to send simulated email notifications"""
@@ -175,7 +175,7 @@ def reschedule_appointment(request, app_id):
 
     return render(request, 'booking/reschedule.html', {'appointment': appointment})
 
-@login_required
+@login_required(login_url='/admin/login/')
 def staff_dashboard(request):
     status_filter = request.GET.get('status', '')
     all_appointments = Appointment.objects.select_related('doctor', 'doctor__department')
