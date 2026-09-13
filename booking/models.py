@@ -19,7 +19,9 @@ class Doctor(models.Model):
     consultation_fee = models.DecimalField(max_digits=10, decimal_places=2, default=500.00)
 
     def __str__(self):
-        return f"Dr. {self.name} ({self.department.name})"
+        # Agar name me pehle se 'Dr.' hai toh dubara na jode
+        prefix = "" if self.name.strip().startswith("Dr.") else "Dr. "
+        return f"{prefix}{self.name} ({self.department.name})"
 
 class Appointment(models.Model):
     STATUS_CHOICES = [

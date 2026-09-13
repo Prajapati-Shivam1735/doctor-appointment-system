@@ -5,9 +5,19 @@ from .models import Doctor, Department, Appointment
 from .forms import AppointmentForm
 
 def home(request):
-    doctors = Doctor.objects.select_related('department').all()
+    dept_id = request.GET.get('dept')
     departments = Department.objects.all()
-    return render(request, 'booking/home.html', {'doctors': doctors, 'departments': departments})
+    
+    if dept_id:
+        doctors = Doctor.objects.filter(department_id=dept_id).select_related('department')
+    else:
+        doctors = Doctor.objects.select_related('department').all()
+        
+    return render(request, 'booking/home.html', {
+        'doctors': doctors, 
+        'departments': departments,
+        'selected_dept': dept_id
+    })
 
 def book_appointment(request):
     if request.method == 'POST':
@@ -42,3 +52,30 @@ def my_appointments(request):
         'query': query,
         'searched': searched
     })
+
+from django.contrib.auth.decorators import login_required
+
+@login_required
+def staff_dashboard(request):
+    status_filter = request.GET.get('status', '')
+    appointments = Appointment.objects.select_related('doctor', 'doctor__department').order_by('-appointment_date', '-appointment_time')
+    
+    if status_filter:
+        appointments = appointments.filter(status=status_filter)
+        
+    return render(request, 'booking/staff_dashboard.html', {
+        'appointments': appointments,
+        'status_filter': status_filter
+    })
+
+@login_required
+def update_appointment_status(request, app_id, new_status):
+    if request.method == 'POST':
+        try:
+            appointment = Appointment.objects.get(id=app_id)
+            if new_status in ['PENDING', 'CONFIRMED', 'COMPLETED', 'CANCELLED']:
+                appointment.status = new_status
+                appointment.save()
+        except Appointment.DoesNotExist:
+            pass
+    return redirect(request.META.get('HTTP_REFERER', 'staff_dashboard'))
