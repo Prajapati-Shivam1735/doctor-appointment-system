@@ -90,12 +90,15 @@
             </a>
             <div class="d-flex align-items-center gap-3">
                 <a href="/admin/" class="text-decoration-none text-secondary fw-semibold small">Admin Login</a>
-                <a href="/book/" class="btn btn-modern"><i class="fa-solid fa-calendar-plus me-1"></i> Book Slot</a>
                 <a href="/track/" class="text-decoration-none text-secondary fw-semibold small">Track Appointment</a>
-                <a href="/staff/" class="nav-link">Staff Login</a>
+
                 {% if user.is_authenticated and user.is_staff %}
-                <a href="{% url 'staff_dashboard' %}" class="btn btn-outline-primary">Staff Dashboard</a>
+                <a href="{% url 'staff_dashboard' %}" class="btn btn-outline-primary btn-sm">Staff Dashboard</a>
+                {% else %}
+                <a href="/staff/" class="text-decoration-none text-secondary fw-semibold small">Staff Login</a>
                 {% endif %}
+
+                <a href="/book/" class="btn btn-modern"><i class="fa-solid fa-calendar-plus me-1"></i> Book Slot</a>
             </div>
         </div>
     </nav>
