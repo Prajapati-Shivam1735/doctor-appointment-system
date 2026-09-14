@@ -14,7 +14,61 @@ from django.db import models
 from django.utils import timezone
 from .models import Doctor, Department, Appointment
 from .forms import AppointmentForm
-from django.contrib.auth.decorators import login_required
+# from django.contrib.auth.decorators import login_required
+from django.shortcuts import render, redirect
+from django.contrib.auth.models import User
+from django.contrib.auth import authenticate, login, logout
+from django.contrib import messages
+# from django.contrib.auth.decorators import login_required
+
+# --- Patient Register ---
+def patient_register(request):
+    if request.user.is_authenticated:
+        return redirect('home')
+
+    if request.method == 'POST':
+        full_name = request.POST.get('name')
+        email = request.POST.get('email')
+        phone = request.POST.get('phone')
+        password = request.POST.get('password')
+
+        # Check agar username (phone) pehle se exist karta hai
+        if User.objects.filter(username=phone).exists():
+            messages.error(request, "Yeh phone number pehle se registered hai!")
+            return redirect('patient_register')
+
+        # Naya user create karein
+        user = User.objects.create_user(
+            username=phone,
+            email=email,
+            password=password,
+            first_name=full_name
+        )
+        login(request, user)
+        messages.success(request, f"Welcome to DocPulse, {full_name}!")
+        return redirect('book')
+
+    return render(request, 'booking/patient_register.html')
+
+
+# --- Patient Login ---
+def patient_login(request):
+    if request.user.is_authenticated:
+        return redirect('home')
+
+    if request.method == 'POST':
+        phone = request.POST.get('phone')
+        password = request.POST.get('password')
+
+        user = authenticate(request, username=phone, password=password)
+        if user is not None:
+            login(request, user)
+            messages.success(request, "Login successful!")
+            return redirect('book')
+        else:
+            messages.error(request, "Galat phone number ya password!")
+
+    return render(request, 'booking/patient_login.html')
 
 def send_booking_email(appointment, subject, message_body):
     """Helper function to send simulated email notifications"""

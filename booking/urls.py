@@ -11,4 +11,6 @@ urlpatterns = [
     path('appointment/<int:app_id>/payment-callback/', views.payment_callback, name='payment_callback'),
     path('dashboard/', views.staff_dashboard, name='staff_dashboard'),
     path('appointment/<int:app_id>/status/<str:new_status>/', views.update_appointment_status, name='update_status'),
+    path('patient/register/', views.patient_register, name='patient_register'),
+    path('patient/login/', views.patient_login, name='patient_login'),
 ]

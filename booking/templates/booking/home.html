@@ -84,18 +84,24 @@
 <body>
 
     <nav class="navbar navbar-expand-lg sticky-top">
-        <div class="container py-1">
-            <a class="navbar-brand fw-bold text-primary d-flex align-items-center gap-2" href="/">
-                <i class="fa-solid fa-heart-pulse fs-4"></i> DocPulse
-            </a>
-            <div class="d-flex align-items-center gap-3">
-                <a href="/admin/" class="text-decoration-none text-secondary fw-semibold small">Admin Login</a>
-                <a href="/track/" class="text-decoration-none text-secondary fw-semibold small">Track Appointment</a>
+        <div class="d-flex align-items-center gap-3">
+            {% if user.is_authenticated %}
+            {% if user.is_superuser %}
+            <a href="/admin/" class="text-decoration-none text-secondary fw-semibold small">Admin Panel</a>
+            {% elif user.is_staff %}
+            <a href="/dashboard/" class="text-decoration-none text-secondary fw-semibold small">Staff Desk</a>
+            {% else %}
+            <span class="text-primary fw-semibold small">Hi, {{ user.first_name }}</span>
+            {% endif %}
+            <a href="/admin/logout/" class="btn btn-outline-danger btn-sm">Logout</a>
+            {% else %}
+            <a href="/patient/login/" class="text-decoration-none text-secondary fw-semibold small">Patient Login</a>
+            <a href="/dashboard/" class="text-decoration-none text-secondary fw-semibold small">Staff Login</a>
+            <a href="/admin/" class="text-decoration-none text-secondary fw-semibold small">Admin Login</a>
+            {% endif %}
 
-                <a href="/dashboard/" class="text-decoration-none text-secondary fw-semibold small">Staff Login</a>
-
-                <a href="/book/" class="btn btn-modern"><i class="fa-solid fa-calendar-plus me-1"></i> Book Slot</a>
-            </div>
+            <a href="/track/" class="text-decoration-none text-secondary fw-semibold small">Track Appointment</a>
+            <a href="/book/" class="btn btn-modern"><i class="fa-solid fa-calendar-plus me-1"></i> Book Slot</a>
         </div>
     </nav>
 
