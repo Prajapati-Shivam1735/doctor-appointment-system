@@ -348,3 +348,7 @@ def download_appointment_pdf(request, app_id):
     response = HttpResponse(buffer, content_type='application/pdf')
     response['Content-Disposition'] = f'attachment; filename="Appointment_{appointment.id}_{appointment.patient_name}.pdf"'
     return response
+
+def user_logout(request):
+    logout(request)
+    return redirect('home')
