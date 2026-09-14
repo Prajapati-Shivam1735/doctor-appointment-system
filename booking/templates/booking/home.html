@@ -83,27 +83,39 @@
 
 <body>
 
-    <nav class="navbar navbar-expand-lg sticky-top">
-        <div class="d-flex align-items-center gap-3">
-            {% if user.is_authenticated %}
-            {% if user.is_superuser %}
-            <a href="/admin/" class="text-decoration-none text-secondary fw-semibold small">Admin Panel</a>
-            {% elif user.is_staff %}
-            <a href="/dashboard/" class="text-decoration-none text-secondary fw-semibold small">Staff Desk</a>
-            {% else %}
-            <span class="text-primary fw-semibold small">Hi, {{ user.first_name }}</span>
-            {% endif %}
-            <a href="/admin/logout/" class="btn btn-outline-danger btn-sm">Logout</a>
-            {% else %}
-            <a href="/patient/login/" class="text-decoration-none text-secondary fw-semibold small">Patient Login</a>
-            <a href="/dashboard/" class="text-decoration-none text-secondary fw-semibold small">Staff Login</a>
-            <a href="/admin/" class="text-decoration-none text-secondary fw-semibold small">Admin Login</a>
-            {% endif %}
+    <nav class="navbar navbar-expand-lg bg-white py-3 border-bottom shadow-sm">
+  <div class="container d-flex justify-content-between align-items-center">
+    
+    <!-- Brand Logo -->
+    <a class="navbar-brand d-flex align-items-center gap-2 text-primary fw-bold fs-4 text-decoration-none" href="/">
+      <i class="fa-solid fa-heart-pulse"></i> DocPulse
+    </a>
 
-            <a href="/track/" class="text-decoration-none text-secondary fw-semibold small">Track Appointment</a>
-            <a href="/book/" class="btn btn-modern"><i class="fa-solid fa-calendar-plus me-1"></i> Book Slot</a>
-        </div>
-    </nav>
+    <!-- Right Navigation Links -->
+    <div class="d-flex align-items-center gap-3">
+      {% if user.is_authenticated %}
+        {% if user.is_superuser %}
+          <a href="/admin/" class="text-decoration-none text-secondary fw-semibold small">Admin Panel</a>
+        {% elif user.is_staff %}
+          <a href="/dashboard/" class="text-decoration-none text-secondary fw-semibold small">Staff Desk</a>
+        {% else %}
+          <span class="text-primary fw-semibold small">Hi, {{ user.first_name|default:user.username }}</span>
+        {% endif %}
+        <a href="/admin/logout/" class="btn btn-outline-danger btn-sm rounded-pill px-3">Logout</a>
+      {% else %}
+        <a href="/patient/login/" class="text-decoration-none text-secondary fw-semibold small">Patient Login</a>
+        <a href="/dashboard/" class="text-decoration-none text-secondary fw-semibold small">Staff Login</a>
+        <a href="/admin/" class="text-decoration-none text-secondary fw-semibold small">Admin Login</a>
+      {% endif %}
+
+      <a href="/track/" class="text-decoration-none text-secondary fw-semibold small">Track Appointment</a>
+      <a href="/book/" class="btn btn-primary rounded-pill px-3 fw-semibold small">
+        <i class="fa-solid fa-calendar-plus me-1"></i> Book Slot
+      </a>
+    </div>
+
+  </div>
+</nav>
 
     <section class="hero text-center text-md-start">
         <div class="container">
