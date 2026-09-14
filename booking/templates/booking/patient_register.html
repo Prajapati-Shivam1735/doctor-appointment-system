@@ -1,47 +1,220 @@
-{% extends 'booking/home.html' %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register | DocPulse</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #fcfcfc;
+            color: #414146;
+        }
 
-{% block content %}
-<div class="container py-5">
-    <div class="row justify-content-center">
-        <div class="col-md-5">
-            <div class="card shadow-sm border-0 rounded-4 p-4">
-                <div class="text-center mb-4">
-                    <h3 class="fw-bold text-primary">Patient Sign Up</h3>
-                    <p class="text-muted small">Create an account to manage your bookings</p>
-                </div>
+        /* Top Nav Tabs */
+        .auth-nav-tabs {
+            border-bottom: 1px solid #e0e0e0;
+            display: flex;
+            gap: 40px;
+            padding: 15px 40px 0;
+            background: #fff;
+        }
 
-                {% if messages %}
-                    {% for msg in messages %}
-                        <div class="alert alert-danger py-2 small">{{ msg }}</div>
-                    {% endfor %}
-                {% endif %}
+        .auth-tab-link {
+            text-decoration: none;
+            color: #414146;
+            font-weight: 600;
+            font-size: 16px;
+            padding-bottom: 12px;
+            border-bottom: 3px solid transparent;
+            display: inline-block;
+        }
 
-                <form method="POST">
-                    {% csrf_token %}
-                    <div class="mb-3">
-                        <label class="form-label small fw-semibold">Full Name</label>
-                        <input type="text" name="name" class="form-control" required placeholder="Enter your full name">
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label small fw-semibold">Phone Number</label>
-                        <input type="text" name="phone" class="form-control" required placeholder="Enter mobile number">
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label small fw-semibold">Email Address</label>
-                        <input type="email" name="email" class="form-control" required placeholder="name@example.com">
-                    </div>
-                    <div class="mb-4">
-                        <label class="form-label small fw-semibold">Password</label>
-                        <input type="password" name="password" class="form-control" required placeholder="Create a password">
-                    </div>
-                    <button type="submit" class="btn btn-primary w-100 py-2 fw-semibold rounded-3">Register</button>
-                </form>
+        .auth-tab-link.active {
+            color: #28328c;
+            border-bottom: 3px solid #14bef0;
+        }
 
-                <div class="text-center mt-3 small">
-                    Already registered? <a href="/patient/login/" class="text-primary fw-semibold text-decoration-none">Login here</a>
+        /* Practo Card Box */
+        .practo-card {
+            background: #ffffff;
+            border: 1px solid #f0f0f5;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+            border-radius: 4px;
+            width: 100%;
+            max-width: 440px;
+        }
+
+        .practo-card-header {
+            padding: 18px 24px;
+            border-bottom: 1px solid #f0f0f5;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .practo-card-header h5 {
+            font-weight: 700;
+            color: #414146;
+            margin: 0;
+            font-size: 17px;
+        }
+
+        .practo-card-header .doctor-link {
+            font-size: 13px;
+            color: #787887;
+            text-decoration: none;
+        }
+
+        .practo-card-header .doctor-link span {
+            color: #ff9e15;
+            font-weight: 600;
+        }
+
+        .practo-card-body {
+            padding: 24px;
+        }
+
+        .form-label {
+            font-size: 13px;
+            font-weight: 600;
+            color: #787887;
+            margin-bottom: 6px;
+        }
+
+        .form-control, .form-select {
+            border-radius: 4px;
+            border: 1px solid #dcdce6;
+            padding: 10px 14px;
+            font-size: 14px;
+            color: #414146;
+        }
+
+        .form-control:focus, .form-select:focus {
+            border-color: #14bef0;
+            box-shadow: 0 0 0 1px #14bef0;
+        }
+
+        .country-select {
+            max-width: 110px;
+            background-color: #f7f7fa;
+            border-right: none;
+            border-top-right-radius: 0;
+            border-bottom-right-radius: 0;
+            font-weight: 600;
+            font-size: 13px;
+            color: #414146;
+        }
+
+        .phone-input {
+            border-top-left-radius: 0;
+            border-bottom-left-radius: 0;
+        }
+
+        .btn-practo {
+            background-color: #14bef0;
+            color: #ffffff;
+            font-weight: 700;
+            font-size: 15px;
+            padding: 12px;
+            border-radius: 4px;
+            border: none;
+            width: 100%;
+            transition: background-color 0.2s ease;
+        }
+
+        .btn-practo:hover {
+            background-color: #0ea7d4;
+            color: #ffffff;
+        }
+
+        .terms-text {
+            font-size: 12px;
+            color: #787887;
+            line-height: 1.4;
+        }
+
+        .terms-text a {
+            color: #14bef0;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Top Tabs (Login / Register) -->
+    <div class="auth-nav-tabs">
+        <a href="/patient/login/" class="auth-tab-link">Login</a>
+        <a href="/patient/register/" class="auth-tab-link active">Register</a>
+    </div>
+
+    <div class="container py-5">
+        <div class="row justify-content-center align-items-center">
+            
+            <!-- Left Side Illustration (Desktop View) -->
+            <div class="col-lg-5 d-none d-lg-flex flex-column align-items-center text-center pe-lg-5">
+                <i class="fa-solid fa-notes-medical" style="font-size: 160px; color: #e0f2fe; margin-bottom: 24px;"></i>
+                <h4 class="fw-bold text-dark">Your Health, All in One Place</h4>
+                <p class="text-muted small">Access instant doctor bookings, manage records, and schedule consultations effortlessly.</p>
+            </div>
+
+            <!-- Right Side Registration Card -->
+            <div class="col-lg-5 col-md-8 d-flex justify-content-center">
+                <div class="practo-card">
+                    
+                    <div class="practo-card-header">
+                        <h5>Join DocPulse</h5>
+                        <a href="/dashboard/" class="doctor-link">Are you a doctor? <span>Register Here</span></a>
+                    </div>
+
+                    <div class="practo-card-body">
+                        {% if messages %}
+                            {% for msg in messages %}
+                                <div class="alert alert-danger py-2 small mb-3">{{ msg }}</div>
+                            {% endfor %}
+                        {% endif %}
+
+                        <form method="POST">
+                            {% csrf_token %}
+
+                            <div class="mb-3">
+                                <label class="form-label">Full Name</label>
+                                <input type="text" name="name" class="form-control" placeholder="Full Name" required>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Mobile Number</label>
+                                <div class="input-group">
+                                    <span class="input-group-text country-select">+91(IND)</span>
+                                    <input type="tel" name="phone" class="form-control phone-input" placeholder="Mobile Number" required>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Create Password</label>
+                                <input type="password" name="password" class="form-control" placeholder="Password" required>
+                            </div>
+
+                            <div class="form-check mb-4">
+                                <input class="form-check-input" type="checkbox" id="promoCheck" checked>
+                                <label class="form-check-label terms-text" for="promoCheck">
+                                    Receive relevant offers and updates from DocPulse.<br>
+                                    By signing up, I agree to <a href="#">terms</a>.
+                                </label>
+                            </div>
+
+                            <button type="submit" class="btn btn-practo">Register Now</button>
+                        </form>
+                    </div>
+
                 </div>
             </div>
+
         </div>
     </div>
-</div>
-{% endblock %}
+
+</body>
+</html>
