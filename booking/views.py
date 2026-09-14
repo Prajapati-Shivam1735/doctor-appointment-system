@@ -46,7 +46,7 @@ def patient_register(request):
         )
         login(request, user)
         messages.success(request, f"Welcome to DocPulse, {full_name}!")
-        return redirect('book')
+        return redirect('home')
 
     return render(request, 'booking/patient_register.html')
 
